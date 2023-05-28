@@ -1,4 +1,4 @@
-from data import token_list,word2idx,idx2word,word_list,vocab_size,sentences
+from data import token_list,word2idx,vocab_size,sentences
 from config import *
 from random import *
 import torch
@@ -8,7 +8,7 @@ import torch.utils.data as Data
 def make_data():
     batch = []
     positive = negative = 0
-    while positive != batch_size / 2 or negative != batch_size / 2:   #为什么是batch_size
+    while positive != batch_size / 2 or negative != batch_size / 2:   #为了使得下个句子的任务的正样本和负样本数量相当
         tokens_a_index, tokens_b_index = randrange(len(sentences)), randrange(
             len(sentences))  # sample random index in sentences
         tokens_a, tokens_b = token_list[tokens_a_index], token_list[tokens_b_index]
@@ -78,3 +78,10 @@ class MyDataSet(Data.Dataset):
             idx]
 
 loader = Data.DataLoader(MyDataSet(input_ids, segment_ids, masked_tokens, masked_pos, isNext), batch_size, True)
+
+batch = make_data()
+input_ids, segment_ids, masked_tokens, masked_pos, isNext = zip(*batch)
+input_ids, segment_ids, masked_tokens, masked_pos, isNext = \
+    torch.LongTensor(input_ids), torch.LongTensor(segment_ids), torch.LongTensor(masked_tokens), \
+    torch.LongTensor(masked_pos), torch.LongTensor(isNext)
+val_loader = Data.DataLoader(MyDataSet(input_ids,segment_ids,masked_tokens,masked_pos,isNext),batch_size,False)

@@ -1,18 +1,21 @@
 from data import *
 from config import *
 from datapro import *
-from model import *
+from traintest import train,validation
+from model import BERT
+import torch.nn as nn
+import torch.optim as optim
 
 
-for epoch in range(180):
-    for input_ids, segment_ids, masked_tokens, masked_pos, isNext in loader:
-      logits_lm, logits_clsf = model(input_ids, segment_ids, masked_pos)
-      loss_lm = criterion(logits_lm.view(-1, vocab_size), masked_tokens.view(-1)) # for masked LM
-      loss_lm = (loss_lm.float()).mean()
-      loss_clsf = criterion(logits_clsf, isNext) # for sentence classification
-      loss = loss_lm + loss_clsf
-      if (epoch + 1) % 10 == 0:
-          print('Epoch:', '%04d' % (epoch + 1), 'loss =', '{:.6f}'.format(loss))
-      optimizer.zero_grad()
-      loss.backward()
-      optimizer.step()
+model = BERT()
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adadelta(model.parameters(), lr=0.001)
+min_loss = 100
+for epoch in range(epochs):
+    train(model=model, loader=loader, optimizer=optimizer, criterion=criterion,vocab_size=vocab_size, epoch=epoch)
+    loss = validation(model=model, loader=val_loader,criterion=criterion,vocab_size=vocab_size)
+    print("val loss at epoch {}:{}".format(epoch,loss))
+    if loss<min_loss:
+        print("save at epoch {}".format(epoch))
+        min_loss = loss
+

@@ -4,7 +4,6 @@ import torch
 import math
 import torch.nn as nn
 import numpy as np
-import torch.optim as optim
 
 def gelu(x):
     return x * 0.5 * (1.0 + torch.erf(x / math.sqrt(2.0)))
@@ -38,11 +37,7 @@ class ScaledDotProductionAttention(nn.Module): # 感觉这个注意力函数可�
         super(ScaledDotProductionAttention,self).__init__()
 
     def forward(self,Q,K,V,attn_mask):
-        # print(Q.size())
-        # print(K.size())
-        # print(attn_mask.size())
         scores = torch.matmul(Q,K.transpose(-1,-2)) / np.sqrt(d_k)
-        # print(scores.size())
         scores.masked_fill_(attn_mask,1e-9)
         attn = nn.Softmax(dim=-1)(scores)
         context = torch.matmul(attn,V)
@@ -116,14 +111,12 @@ class BERT(nn.Module):
             # output: [batch_size, max_len, d_model]
             output = layer(output, enc_self_attn_mask)
         # it will be decided by first token(CLS)
-        h_pooled = self.fc(output[:, 0]) # [batch_size, d_model]
-        logits_clsf = self.classifier(h_pooled) # [batch_size, 2] predict isNext
+        h_pooled = self.fc(output[:, 0])  # [batch_size, d_model]
+        logits_clsf = self.classifier(h_pooled)  # [batch_size, 2] predict isNext
 
         masked_pos = masked_pos[:, :, None].expand(-1, -1, d_model) # [batch_size, max_pred, d_model]
         h_masked = torch.gather(output, dim = 1, index=masked_pos) # masking position [batch_size, max_pred, d_model]
         h_masked = self.activ2(self.linear(h_masked)) # [batch_size, max_pred, d_model]
         logits_lm = self.fc2(h_masked) # [batch_size, max_pred, vocab_size]
         return logits_lm, logits_clsf
-model = BERT()
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adadelta(model.parameters(), lr=0.001)
+
