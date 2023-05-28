@@ -24,18 +24,3 @@ token_list = list()
 for sentence in sentences:
     arr = [word2idx[s] for s in sentence.split()]
     token_list.append(arr)
-
-# print(token_list)
-
-
-# text = (
-#     'Hello, how are you? I am Romeo.\n' # R
-#     'Hello, Romeo My name is Juliet. Nice to meet you.\n' # J
-#     'Nice meet you too. How are you today?\n' # R
-#     'Great. My baseball team won the competition.\n' # J
-#     'Oh Congratulations, Juliet\n' # R
-#     'Thank you Romeo\n' # J
-#     'Where are you going today?\n' # R
-#     'I am going shopping. What about you?\n' # J
-#     'I am going to visit my grandmother. she is not very well' # R
-# )
